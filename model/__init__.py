@@ -1,9 +1,11 @@
 from .model.CNN import TextCNN
 from .model.Bert import Bert
+from .VanillaLFM import VanillaLFM
 
 model_list = {
     "CNN": TextCNN,
     "BERT": Bert,
+    "VanillaLFM": VanillaLFM,
 }
 
 def get_model(model_name):

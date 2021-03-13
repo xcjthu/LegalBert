@@ -1,11 +1,13 @@
 import logging
 
 from .Basic import BasicFormatter
+from .VanillaLFMFormatter import VanillaLFMFormatter
 
 logger = logging.getLogger(__name__)
 
 formatter_list = {
     "Basic": BasicFormatter,
+    'VanillaLFM': VanillaLFMFormatter,
 }
 
 
