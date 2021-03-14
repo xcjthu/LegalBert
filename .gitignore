@@ -6,6 +6,8 @@ __pycache__
 *un~
 data/
 
+PLMConfig/roberta-converted-lfm
+
 config/default_local.config
 
 temp

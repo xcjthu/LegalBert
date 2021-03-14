@@ -12,7 +12,7 @@ class VanillaLFMFormatter(BasicFormatter):
         super().__init__(config, mode, *args, **params)
         self.max_len = config.getint("train", "max_len")
         self.mode = mode
-        self.tokenizer = AutoTokenizer.from_pretrained('schen/longformer-chinese-base-4096')
+        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-chinese')
         self.mlm_prob = config.getfloat("train", "mlm_prob")
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm_probability=self.mlm_prob)
 
