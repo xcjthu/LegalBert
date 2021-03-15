@@ -2,13 +2,15 @@ import logging
 import os
 import torch
 from torch.autograd import Variable
-from torch.optim import lr_scheduler
+from torch.optim import lr_scheduler as lrs
 from tensorboardX import SummaryWriter
 import shutil
 from timeit import default_timer as timer
 
 from tools.eval_tool import valid, gen_time_str, output_value
 from tools.init_tool import init_test_dataset, init_formatter
+from transformers import get_linear_schedule_with_warmup
+from torch.cuda.amp import autocast
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +66,15 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
 
     step_size = config.getint("train", "step_size")
     gamma = config.getfloat("train", "lr_multiplier")
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
-    exp_lr_scheduler.step(trained_epoch)
+
+    lr_scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=config.getint('train', 'warmup_steps'), num_training_steps=config.getint('train', 'training_steps'))
+    # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    # exp_lr_scheduler.step(trained_epoch)
+
+    fp16 = config.getboolean('train', 'fp16')
+    if fp16:
+        scaler = torch.cuda.amp.GradScaler()
+    max_grad_norm = config.getfloat('train', 'max_grad_norm')
 
     logger.info("Training start....")
 
@@ -79,7 +88,7 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
         start_time = timer()
         current_epoch = epoch_num
 
-        exp_lr_scheduler.step(current_epoch)
+        # exp_lr_scheduler.step(current_epoch)
 
         acc_result = None
         total_loss = 0
@@ -95,14 +104,42 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
                         data[key] = Variable(data[key])
 
             optimizer.zero_grad()
-
-            results = model(data, config, gpu_list, acc_result, "train")
+            if fp16:
+                with autocast():
+                    results = model(data, config, gpu_list, acc_result, "train")
+            else:
+                results = model(data, config, gpu_list, acc_result, "train")
 
             loss, acc_result = results["loss"], results["acc_result"]
             total_loss += float(loss)
 
-            loss.backward()
-            optimizer.step()
+            if fp16:
+                scaler.scale(loss).backward()
+            else:
+                loss.backward()
+
+            if max_grad_norm is not None and max_grad_norm > 0:
+                if fp16:
+                    scaler.unscale_(optimizer)
+                if hasattr(optimizer, "clip_grad_norm"):
+                    # Some optimizers (like the sharded optimizer) have a specific way to do gradient clipping
+                    optimizer.clip_grad_norm(max_grad_norm)
+                elif hasattr(model, "clip_grad_norm_"):
+                    # Some models (like FullyShardedDDP) have a specific way to do gradient clipping
+                    model.clip_grad_norm_(max_grad_norm)
+                else:
+                    # Revert to normal clipping otherwise, handling Apex or full precision
+                    torch.nn.utils.clip_grad_norm_(
+                        model.parameters(),
+                        max_grad_norm
+                    )
+
+            if fp16:
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                optimizer.step()
+            lr_scheduler.step()
 
             if step % output_time == 0 and local_rank <= 0:
                 output_info = output_function(acc_result, config)

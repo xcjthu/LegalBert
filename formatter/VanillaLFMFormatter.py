@@ -5,14 +5,15 @@ import numpy as np
 
 from formatter.Basic import BasicFormatter
 import random
-from transformers import AutoTokenizer, DataCollatorForLanguageModeling
+from transformers import AutoTokenizer, DataCollatorForLanguageModeling, LongformerTokenizer
 
 class VanillaLFMFormatter(BasicFormatter):
     def __init__(self, config, mode, *args, **params):
         super().__init__(config, mode, *args, **params)
         self.max_len = config.getint("train", "max_len")
         self.mode = mode
-        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-chinese')
+        # self.tokenizer = LongformerTokenizer.from_pretrained("/data/disk1/private/xcj/LegalBert/src/PLMConfig/roberta-converted-lfm/vocab.txt", pretrained_model_name_or_path='/data/disk1/private/xcj/LegalBert/src/PLMConfig/roberta-converted-lfm/')
+        self.tokenizer = AutoTokenizer.from_pretrained("hfl/chinese-roberta-wwm-ext")
         self.mlm_prob = config.getfloat("train", "mlm_prob")
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm_probability=self.mlm_prob)
 
