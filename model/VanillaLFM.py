@@ -7,7 +7,7 @@ class VanillaLFM(nn.Module):
         super(VanillaLFM, self).__init__()
         #config = LongformerConfig.from_pretrained('/data/disk1/private/xcj/LegalBert/src/PLMConfig/LFM.config')
         #self.LFM = LongformerForMaskedLM(config)
-        self.LFM = LongformerForMaskedLM.from_pretrained('/data/disk1/private/xcj/LegalBert/src/PLMConfig/roberta-converted-lfm/')
+        self.LFM = LongformerForMaskedLM.from_pretrained('/data/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm/')
         # self.LFM = LongformerForMaskedLM.from_pretrained('schen/longformer-chinese-base-4096', config=config)#AutoModelForMaskedLM.from_pretrained("bert-base-chinese")
 
     def forward(self, data, config, gpu_list, acc_result, mode):
