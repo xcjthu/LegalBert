@@ -15,14 +15,15 @@ from torch.cuda.amp import autocast
 logger = logging.getLogger(__name__)
 
 
-def checkpoint(filename, model, optimizer, trained_epoch, config, global_step):
+def checkpoint(filename, model, optimizer, trained_epoch, config, global_step, lr_scheduler):
     model_to_save = model.module if hasattr(model, 'module') else model
     save_params = {
         "model": model_to_save.state_dict(),
         "optimizer_name": config.get("train", "optimizer"),
         "optimizer": optimizer.state_dict(),
         "trained_epoch": trained_epoch,
-        "global_step": global_step
+        "global_step": global_step,
+        "lr_scheduler": lr_scheduler.state_dict(),
     }
 
     try:
@@ -161,7 +162,7 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
             if valid_mode == 'step' and (step + 1) % step_epoch == 0:
                 if local_rank <= 0:
                     print()
-                    checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step)
+                    checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step, lr_scheduler)
                     writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
                     path = os.path.join(output_path, 'model_%d' % current_epoch)
                     if local_rank < 0:
@@ -191,7 +192,7 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
         #    raise NotImplementedError
 
         if local_rank <= 0:
-            checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step)
+            checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step, lr_scheduler)
             writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
 
         if current_epoch % test_time == 0:
