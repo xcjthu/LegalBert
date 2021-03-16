@@ -15,14 +15,15 @@ from torch.cuda.amp import autocast
 logger = logging.getLogger(__name__)
 
 
-def checkpoint(filename, model, optimizer, trained_epoch, config, global_step):
+def checkpoint(filename, model, optimizer, trained_epoch, config, global_step, lr_scheduler):
     model_to_save = model.module if hasattr(model, 'module') else model
     save_params = {
         "model": model_to_save.state_dict(),
         "optimizer_name": config.get("train", "optimizer"),
         "optimizer": optimizer.state_dict(),
         "trained_epoch": trained_epoch,
-        "global_step": global_step
+        "global_step": global_step,
+        "lr_scheduler": lr_scheduler.state_dict(),
     }
 
     try:
@@ -75,7 +76,13 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
     if fp16:
         scaler = torch.cuda.amp.GradScaler()
     max_grad_norm = config.getfloat('train', 'max_grad_norm')
-
+    valid_mode = config.get('train', 'valid_mode')
+    if valid_mode != 'step' and valid_mode != 'batch':
+        raise ValueError('The value of valid_mode is invalid.')
+    print('valid_mode', valid_mode)
+    if valid_mode == 'step':
+        step_epoch = config.getint('train', 'step_epoch')
+    print('step_epoch', step_epoch)
     logger.info("Training start....")
 
     print("Epoch  Stage  Iterations  Time Usage    Loss    Output Information")
@@ -152,7 +159,26 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
 
             global_step += 1
             writer.add_scalar(config.get("output", "model_name") + "_train_iter", float(loss), global_step)
-            # break
+            if valid_mode == 'step' and (step + 1) % step_epoch == 0:
+                if local_rank <= 0:
+                    print()
+                    checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step, lr_scheduler)
+                    writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
+                    path = os.path.join(output_path, 'model_%d' % current_epoch)
+                    if local_rank < 0:
+                        model.save_pretrained(path)
+                    else:
+                        model.module.save_pretrained(path)
+                with torch.no_grad():
+                    valid(model, parameters["valid_dataset"], current_epoch, writer, config, gpu_list, output_function)
+
+        if step == -1:
+            logger.error("There is no data given to the model in this epoch, check your data.")
+            raise NotImplementedError
+
+
+        if valid_mode != 'batch':
+            continue
 
         if local_rank <= 0:
             output_info = output_function(acc_result, config)
@@ -161,15 +187,13 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
                 gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
                         "%.3lf" % (total_loss / (step + 1)), output_info, None, config)
 
-        if step == -1:
-            logger.error("There is no data given to the model in this epoch, check your data.")
-            raise NotImplementedError
+        # if step == -1:
+        #    logger.error("There is no data given to the model in this epoch, check your data.")
+        #    raise NotImplementedError
 
         if local_rank <= 0:
-            checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config,
-                    global_step)
-            writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1),
-                            current_epoch)
+            checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step, lr_scheduler)
+            writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
 
         if current_epoch % test_time == 0:
             with torch.no_grad():

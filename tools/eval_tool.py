@@ -88,13 +88,14 @@ def valid(model, dataset, epoch, writer, config, gpu_list, output_function, mode
         raise NotImplementedError
 
     if config.getboolean("distributed", "use"):
-        shape = len(acc_result)
-        mytensor = torch.LongTensor([acc_result[key] for key in acc_result]).to(gpu_list[local_rank])
-        mylist = [torch.LongTensor(shape).to(gpu_list[local_rank]) for i in range(config.getint('distributed', 'gpu_num'))]
+        shape = len(acc_result) + 1
+        mytensor = torch.FloatTensor([total_loss] + [acc_result[key] for key in acc_result]).to(gpu_list[local_rank])
+        mylist = [torch.FloatTensor(shape).to(gpu_list[local_rank]) for i in range(config.getint('distributed', 'gpu_num'))]
         torch.distributed.all_gather(mylist, mytensor)#, 0)
         if local_rank == 0:
             mytensor = sum(mylist)
-            index = 0
+            total_loss = float(mytensor[0]) / config.getint('distributed', 'gpu_num')
+            index = 1
             for key in acc_result:
                 acc_result[key] = int(mytensor[index])
                 index += 1
