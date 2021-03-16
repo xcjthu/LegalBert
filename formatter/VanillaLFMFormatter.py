@@ -24,7 +24,7 @@ class VanillaLFMFormatter(BasicFormatter):
         for docid, doc in enumerate(data):
             if len(doc) < max_len:
                 mask[docid, :len(doc)] = 1
-                inputx.append(torch.LongTensor( np.array(( doc + [self.tokenizer.pad_token_id] * (max_len - len(doc) ) ).copy(), dtype=np.int16) ))
+                inputx.append(torch.LongTensor( np.array(( doc + [self.tokenizer.pad_token_id] * ( max_len - len(doc) ) ).copy(), dtype=np.int16) ))
             else:
                 mask[docid] = 1
                 inputx.append(torch.LongTensor( np.array(doc[:max_len].copy(), dtype=np.int16) ))
