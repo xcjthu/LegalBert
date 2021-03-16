@@ -75,6 +75,11 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
     if fp16:
         scaler = torch.cuda.amp.GradScaler()
     max_grad_norm = config.getfloat('train', 'max_grad_norm')
+    valid_mode = config.get('train', 'valid_mode')
+    if valid_mode != 'step' and valid_mode != 'batch':
+        raise ValueError('The value of valid_mode is invalid.')
+    if valid_mode == 'step':
+        step_epoch = config.getint('train', 'step_epoch')
 
     logger.info("Training start....")
 
@@ -152,7 +157,19 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
 
             global_step += 1
             writer.add_scalar(config.get("output", "model_name") + "_train_iter", float(loss), global_step)
-            # break
+            if valid_mode == 'valid' and step % step_epoch == 0:
+                if local_rank <= 0:
+                    checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step)
+                    writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
+                with torch.no_grad():
+                    valid(model, parameters["valid_dataset"], current_epoch, writer, config, gpu_list, output_function)
+        if step == -1:
+            logger.error("There is no data given to the model in this epoch, check your data.")
+            raise NotImplementedError
+
+
+        if valid_mode != 'batch':
+            continue
 
         if local_rank <= 0:
             output_info = output_function(acc_result, config)
@@ -161,15 +178,13 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
                 gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
                         "%.3lf" % (total_loss / (step + 1)), output_info, None, config)
 
-        if step == -1:
-            logger.error("There is no data given to the model in this epoch, check your data.")
-            raise NotImplementedError
+        # if step == -1:
+        #    logger.error("There is no data given to the model in this epoch, check your data.")
+        #    raise NotImplementedError
 
         if local_rank <= 0:
-            checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config,
-                    global_step)
-            writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1),
-                            current_epoch)
+            checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step)
+            writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
 
         if current_epoch % test_time == 0:
             with torch.no_grad():
