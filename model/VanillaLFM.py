@@ -9,6 +9,8 @@ class VanillaLFM(nn.Module):
         #self.LFM = LongformerForMaskedLM(config)
         self.LFM = LongformerForMaskedLM.from_pretrained('/data/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm/')
         # self.LFM = LongformerForMaskedLM.from_pretrained('schen/longformer-chinese-base-4096', config=config)#AutoModelForMaskedLM.from_pretrained("bert-base-chinese")
+    def save_pretrained(self, path):
+        self.LFM.save_pretrained(path)
 
     def forward(self, data, config, gpu_list, acc_result, mode):
         ret = self.LFM(data['input_ids'], attention_mask=data['mask'], labels=data['labels'])
