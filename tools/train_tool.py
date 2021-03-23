@@ -164,7 +164,7 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
                     print()
                     checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step, lr_scheduler)
                     writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
-                    path = os.path.join(output_path, 'model_%d' % current_epoch)
+                    path = os.path.join(output_path, 'model_%d_%d' % (current_epoch, step + 1))
                     if local_rank < 0:
                         model.save_pretrained(path)
                     else:
