@@ -44,7 +44,7 @@ class MultiDocDataset(Dataset):
     def __getitem__(self, idx):
         ridx = int(self.idlist[idx])
         for i in range(len(self.lens)):
-            if ridx > self.lens[i]:
+            if ridx >= self.lens[i]:
                 ridx -= self.lens[i]
             else:
                 return self.datasets[i][ridx]
