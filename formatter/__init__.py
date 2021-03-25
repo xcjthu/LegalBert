@@ -2,12 +2,14 @@ import logging
 
 from .Basic import BasicFormatter
 from .VanillaLFMFormatter import VanillaLFMFormatter
+from .DocLawFormatter import DocLawFormatter
 
 logger = logging.getLogger(__name__)
 
 formatter_list = {
     "Basic": BasicFormatter,
     'VanillaLFM': VanillaLFMFormatter,
+    "DocLaw": DocLawFormatter,
 }
 
 
