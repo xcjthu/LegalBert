@@ -6,7 +6,7 @@ from transformers.models.longformer.modeling_longformer import LongformerPooler
 class DocLawLFM(nn.Module):
     def __init__(self, config, gpu_list, *args, **params):
         super(DocLawLFM, self).__init__()
-        self.LFM = LongformerForMaskedLM.from_pretrained('/data/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm/')
+        self.LFM = LongformerForMaskedLM.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
         self.pooler = LongformerPooler(self.LFM.config)
         self.outlinear = nn.Linear(self.LFM.config.hidden_size, 2)
         self.lossfn = nn.CrossEntropyLoss()

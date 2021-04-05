@@ -67,6 +67,7 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
 
     step_size = config.getint("train", "step_size")
     gamma = config.getfloat("train", "lr_multiplier")
+    grad_accumulate = config.getint("train", "grad_accumulate")
 
     lr_scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=config.getint('train', 'warmup_steps'), num_training_steps=config.getint('train', 'training_steps'))
     # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
@@ -110,7 +111,7 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
                     else:
                         data[key] = Variable(data[key])
 
-            optimizer.zero_grad()
+            
             if fp16:
                 with autocast():
                     results = model(data, config, gpu_list, acc_result, "train")
@@ -125,28 +126,31 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
             else:
                 loss.backward()
 
-            if max_grad_norm is not None and max_grad_norm > 0:
-                if fp16:
-                    scaler.unscale_(optimizer)
-                if hasattr(optimizer, "clip_grad_norm"):
-                    # Some optimizers (like the sharded optimizer) have a specific way to do gradient clipping
-                    optimizer.clip_grad_norm(max_grad_norm)
-                elif hasattr(model, "clip_grad_norm_"):
-                    # Some models (like FullyShardedDDP) have a specific way to do gradient clipping
-                    model.clip_grad_norm_(max_grad_norm)
-                else:
-                    # Revert to normal clipping otherwise, handling Apex or full precision
-                    torch.nn.utils.clip_grad_norm_(
-                        model.parameters(),
-                        max_grad_norm
-                    )
+            if (step + 1) % grad_accumulate == 0:
+                
+                if max_grad_norm is not None and max_grad_norm > 0:
+                    if fp16:
+                        scaler.unscale_(optimizer)
+                    if hasattr(optimizer, "clip_grad_norm"):
+                        # Some optimizers (like the sharded optimizer) have a specific way to do gradient clipping
+                        optimizer.clip_grad_norm(max_grad_norm)
+                    elif hasattr(model, "clip_grad_norm_"):
+                        # Some models (like FullyShardedDDP) have a specific way to do gradient clipping
+                        model.clip_grad_norm_(max_grad_norm)
+                    else:
+                        # Revert to normal clipping otherwise, handling Apex or full precision
+                        torch.nn.utils.clip_grad_norm_(
+                            model.parameters(),
+                            max_grad_norm
+                        )
 
-            if fp16:
-                scaler.step(optimizer)
-                scaler.update()
-            else:
-                optimizer.step()
-            lr_scheduler.step()
+                if fp16:
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
 
             if step % output_time == 0 and local_rank <= 0:
                 output_info = output_function(acc_result, config)
@@ -159,12 +163,12 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
 
             global_step += 1
             writer.add_scalar(config.get("output", "model_name") + "_train_iter", float(loss), global_step)
-            if valid_mode == 'step' and (step + 1) % step_epoch == 0:
+            if (step + 1) % grad_accumulate == 0 and valid_mode == 'step' and int((step + 1) / grad_accumulate) % step_epoch == 0:
                 if local_rank <= 0:
                     print()
                     checkpoint(os.path.join(output_path, "%d.pkl" % current_epoch), model, optimizer, current_epoch, config, global_step, lr_scheduler)
                     writer.add_scalar(config.get("output", "model_name") + "_train_epoch", float(total_loss) / (step + 1), current_epoch)
-                    path = os.path.join(output_path, 'model_%d_%d' % (current_epoch, step + 1))
+                    path = os.path.join(output_path, 'model_%d_%d' % (current_epoch, (step + 1) // grad_accumulate))
                     if local_rank < 0:
                         model.save_pretrained(path)
                     else:
