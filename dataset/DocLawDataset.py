@@ -100,7 +100,10 @@ class NSPDocLawDataset(Dataset):
             raise ValueError('Index is larger than the number of data')
 
         # sent = self.indexed_dataset[idx]
-        for i in range(sent.shape[0]-1, 0, -1):
+        # for i in range(sent.shape[0]-1, 0, -1):
+        #     if sent[i] == 102:
+        #         break
+        for i in range(max(sent.shape[0] - 52, 0), sent.shape[0]):
             if sent[i] == 102:
                 break
         if i == sent.shape[0] - 1:

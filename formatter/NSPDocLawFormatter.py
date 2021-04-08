@@ -65,4 +65,13 @@ class NSPDocLawFormatter(BasicFormatter):
             'label': torch.LongTensor(lawlabel),
             'global_att': torch.LongTensor(global_att),
         }
+        assert not (ret['input_ids'] >= len(self.tokenizer)).any()
+        assert not (ret['global_att'] >= 2).any()
+        assert not (ret['global_att'] < 0).any()
+        assert not (ret['mask'] >= 2).any()
+        assert not (ret['mask'] < 0).any()
+        assert ret['mask'].shape == ret['mlmlabels'].shape == ret['input_ids'].shape
+        assert ret['input_ids'].shape[1] <= self.max_len
+        assert ret['label'].shape[0] == ret['input_ids'].shape[0]
+
         return ret
