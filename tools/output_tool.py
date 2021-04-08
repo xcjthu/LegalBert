@@ -37,3 +37,11 @@ def output_function1(data, config, *args, **params):
     if 'labelset' in data and 'doc_num' in data and data['doc_num'] != 0:
         metric['ave_len'] = data['labelset'] / data['doc_num']
     return json.dumps(metric)
+
+def binary_output_function(data, config, *args, **params):
+    if data['total'] == 0:
+        metric = {'acc': 0}
+    else:
+        metric = {'acc': round(data['right'] / data['total'], 4)}
+    return json.dumps(metric)
+

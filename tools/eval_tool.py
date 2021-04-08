@@ -23,19 +23,19 @@ def output_value(epoch, mode, step, time, loss, info, end, config):
         delimiter = " "
     s = ""
     s = s + str(epoch) + " "
-    while len(s) < 7:
+    while len(s) < 10:
         s += " "
     s = s + str(mode) + " "
-    while len(s) < 14:
+    while len(s) < 18:
         s += " "
     s = s + str(step) + " "
-    while len(s) < 25:
+    while len(s) < 30:
         s += " "
     s += str(time)
-    while len(s) < 40:
+    while len(s) < 45:
         s += " "
     s += str(loss)
-    while len(s) < 48:
+    while len(s) < 53:
         s += " "
     s += str(info)
     s = s.replace(" ", delimiter)

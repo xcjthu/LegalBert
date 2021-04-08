@@ -3,6 +3,7 @@ from .IndexedDataset import make_dataset
 from .FullTokenDataset import FullTokenDataset,MultiDocDataset
 from .DocLawDataset import DocLawDataset
 from .DocLawDataset import NSPDocLawDataset
+from .ContrastiveLawDataset import ContrastiveLawDataset
 
 dataset_list = {
     "JsonFromFiles": JsonFromFilesDataset,
@@ -11,4 +12,5 @@ dataset_list = {
     "MultiDocDataset": MultiDocDataset,
     "DocLaw": DocLawDataset,
     "NSPLaw": NSPDocLawDataset,
+    "ContrastiveLaw": ContrastiveLawDataset,
 }

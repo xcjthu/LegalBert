@@ -2,6 +2,7 @@ from .model.CNN import TextCNN
 from .model.Bert import Bert
 from .VanillaLFM import VanillaLFM, VanillaBert
 from .DocLawLFM import DocLawLFM
+from .ContrastiveLawLFM import ContrastiveLawLFM
 
 model_list = {
     "CNN": TextCNN,
@@ -9,6 +10,7 @@ model_list = {
     "VanillaLFM": VanillaLFM,
     "VanillaBert": VanillaBert,
     "DocLaw": DocLawLFM,
+    "ContrastiveLaw": ContrastiveLawLFM,
 }
 
 def get_model(model_name):
