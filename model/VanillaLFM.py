@@ -5,10 +5,10 @@ from torch import nn
 class VanillaLFM(nn.Module):
     def __init__(self, config, gpu_list, *args, **params):
         super(VanillaLFM, self).__init__()
-        #config = LongformerConfig.from_pretrained('/data/disk1/private/xcj/LegalBert/src/PLMConfig/LFM.config')
-        #self.LFM = LongformerForMaskedLM(config)
-        self.LFM = LongformerForMaskedLM.from_pretrained('/data/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm/')
-        # self.LFM = LongformerForMaskedLM.from_pretrained('schen/longformer-chinese-base-4096', config=config)#AutoModelForMaskedLM.from_pretrained("bert-base-chinese")
+        # config = LongformerConfig.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
+        # self.LFM = LongformerForMaskedLM(config)
+        self.LFM = LongformerForMaskedLM.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
+
     def save_pretrained(self, path):
         self.LFM.save_pretrained(path)
 

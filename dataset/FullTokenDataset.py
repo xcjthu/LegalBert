@@ -13,6 +13,7 @@ class FullTokenDataset(Dataset):
         self.indexed_dataset = make_dataset(config, mode)
         self.data_num = len(self.indexed_dataset)
     
+
     def __getitem__(self, idx):
         if isinstance(idx, int):
             sent = self.indexed_dataset[idx]
@@ -41,14 +42,28 @@ class MultiDocDataset(Dataset):
         self.idlist = np.arange(0, self.length)
         np.random.shuffle(self.idlist)
     
-    def __getitem__(self, idx):
+    def get_index_i(self, idx):
         ridx = int(self.idlist[idx])
+        sent = None
         for i in range(len(self.lens)):
             if ridx >= self.lens[i]:
                 ridx -= self.lens[i]
             else:
-                return self.datasets[i][ridx]
-        raise ValueError('Index is larger than the number of data')
+                sent = self.datasets[i][ridx]
+        if sent is None:
+            raise ValueError('Index is larger than the number of data')
+        for i in range(max(sent.shape[0] - 52, 0), sent.shape[0]):
+            if sent[i] == 102:
+                break
+        return sent[:i+1]
+    
+    def __getitem__(self, idx):
+        sent = self.get_index_i(idx)
+        while sent.shape[0] < self.max_len - 50:
+            ridx = random.randint(0, self.length - 1)
+            rsent = self.get_index_i(ridx)
+            sent = np.concatenate([sent, rsent])[:self.max_len]
+        return sent
     
     def __len__(self):
         return self.length

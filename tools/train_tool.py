@@ -123,6 +123,7 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
             loss, acc_result = results["loss"], results["acc_result"]
             total_loss += float(loss)
 
+            loss = loss / grad_accumulate
             if fp16:
                 scaler.scale(loss).backward()
             else:
