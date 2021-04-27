@@ -23,7 +23,7 @@ class ContrastiveLawDataset(Dataset):
 
         self.lawdata = LawDataset(config)
         print(mode, 'the num of data: ', self.length)
-    
+
     def get_index_i(self, idx):
         ridx = int(self.idlist[idx])
         sent = None
@@ -42,7 +42,6 @@ class ContrastiveLawDataset(Dataset):
         else:
             laws = sent[i+1:].tolist()
         return sent[:i+1], laws
-
 
     def __getitem__(self, idx):
         sent, laws = self.get_index_i(idx)
