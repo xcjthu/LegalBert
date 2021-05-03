@@ -8,13 +8,11 @@ import random
 from transformers import AutoTokenizer, DataCollatorForLanguageModeling, LongformerTokenizer
 from dataset.LawDataset import LawDataset
 
-class ContrastiveLawFormatter(BasicFormatter):
+class LawClassifierFormatter(BasicFormatter):
     def __init__(self, config, mode, *args, **params):
         super().__init__(config, mode, *args, **params)
         self.mode = mode
         self.max_len = config.getint("train", "max_len")
-        self.law_max_len = config.getint("train", "law_max_len")
-        self.law_neg_num = config.getint("train", "law_neg_num")
 
         self.tokenizer = AutoTokenizer.from_pretrained("hfl/chinese-roberta-wwm-ext")
         self.mlm_prob = config.getfloat("train", "mlm_prob")
