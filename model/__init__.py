@@ -1,7 +1,7 @@
-from .VanillaLFM import VanillaLFM
+from .Lawformer import Lawformer
 
 model_list = {
-    "VanillaLFM": VanillaLFM,
+    "Lawformer": Lawformer,
 }
 
 def get_model(model_name):

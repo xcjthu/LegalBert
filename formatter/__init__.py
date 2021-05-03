@@ -1,11 +1,11 @@
 import logging
 
-from .VanillaLFMFormatter import VanillaLFMFormatter
+from .LawformerFormatter import LawformerFormatter
 
 logger = logging.getLogger(__name__)
 
 formatter_list = {
-    'VanillaLFM': VanillaLFMFormatter,
+    'Lawformer': LawformerFormatter,
 }
 
 
