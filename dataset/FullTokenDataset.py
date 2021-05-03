@@ -5,30 +5,6 @@ from .IndexedDataset import make_dataset,MMapIndexedDataset
 import random
 import numpy as np
 
-class FullTokenDataset(Dataset):
-    def __init__(self, config, mode, encoding="utf8", *args, **params):
-        self.config = config
-        self.mode = mode
-        self.max_len = config.getint('train', 'max_len')
-        self.indexed_dataset = make_dataset(config, mode)
-        self.data_num = len(self.indexed_dataset)
-    
-
-    def __getitem__(self, idx):
-        if isinstance(idx, int):
-            sent = self.indexed_dataset[idx]
-            while sent.shape[0] < self.max_len - 30:
-                ridx = random.randint(0, self.data_num-1)
-                rsent = self.indexed_dataset[ridx]
-                sent = np.concatenate([sent, rsent])[:self.max_len]
-            return sent
-        elif isinstance(idx, slice):
-            sents = self.indexed_dataset[idx]
-            return sents
-
-    def __len__(self):
-        return len(self.indexed_dataset)
-
 class MultiDocDataset(Dataset):
     def __init__(self, config, mode, encoding="utf8", *args, **params):
         self.config = config
