@@ -6,7 +6,7 @@ __pycache__
 *un~
 data/
 
-PLMConfig/roberta-converted-lfm
+PLMConfig/DimRedBERT
 
 config/default_local.config
 
