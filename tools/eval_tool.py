@@ -3,7 +3,6 @@ import os
 import torch
 from torch.autograd import Variable
 from torch.optim import lr_scheduler
-from tensorboardX import SummaryWriter
 from timeit import default_timer as timer
 
 logger = logging.getLogger(__name__)
@@ -45,7 +44,7 @@ def output_value(epoch, mode, step, time, loss, info, end, config):
         print(s)
 
 
-def valid(model, dataset, epoch, writer, config, gpu_list, output_function, mode="valid"):
+def valid(model, dataset, epoch, config, gpu_list, output_function, mode="valid"):
     model.eval()
     local_rank = config.getint('distributed', 'local_rank')
 
@@ -106,7 +105,5 @@ def valid(model, dataset, epoch, writer, config, gpu_list, output_function, mode
             gen_time_str(delta_t), gen_time_str(delta_t * (total_len - step - 1) / (step + 1))),
                     "%.3lf" % (total_loss / (step + 1)), output_info, None, config)
 
-        writer.add_scalar(config.get("output", "model_name") + "_eval_epoch", float(total_loss) / (step + 1),
-                        epoch)
 
     model.train()

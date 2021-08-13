@@ -34,7 +34,7 @@ class VanillaBert(nn.Module):
 class VanillaDimRedBERT(nn.Module):
     def __init__(self, config, gpu_list, *args, **params):
         super(VanillaDimRedBERT, self).__init__()
-        self.bert = DimRedBertForMaskedLM.from_pretrained("hfl/chinese-roberta-wwm-ext")
+        self.bert = DimRedBertForMaskedLM.from_pretrained("/home/xcj/LegalLongPLM/LegalLongPLM/PLMConfig/DimRedBERT")
 
     def save_pretrained(self, path):
         self.bert.save_pretrained(path)

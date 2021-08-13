@@ -5,15 +5,16 @@ import torch
 import copy
 from torch import nn
 
-config = AutoConfig.from_pretrained("hfl/chinese-roberta-wwm-ext")
-roberta = AutoModelForMaskedLM.from_pretrained("hfl/chinese-roberta-wwm-ext")
+config = AutoConfig.from_pretrained("hfl/chinese-roberta-wwm-ext", mirror="tuna")
+roberta = AutoModelForMaskedLM.from_pretrained("hfl/chinese-roberta-wwm-ext", mirror="tuna")
 
 max_pos = 2048
-drconfig = AutoConfig.from_pretrained("hfl/chinese-roberta-wwm-ext")
+drconfig = AutoConfig.from_pretrained("hfl/chinese-roberta-wwm-ext", mirror="tuna")
 # drconfig.num_attention_heads_layerwise = [12, 12, 12, 8, 8, 4, 4, 8, 8, 12, 12, 12]
 # drconfig.hidden_size_layerwise = [768, 768, 768, 512, 512, 256, 256, 512, 512, 768, 768, 768]
 drconfig.num_attention_heads_layerwise = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]
-drconfig.hidden_size_layerwise = [768, 768, 768, 384, 384, 192, 192, 384, 384, 768, 768, 768]
+# drconfig.hidden_size_layerwise = [768, 768, 768, 384, 384, 192, 192, 384, 384, 768, 768, 768]
+drconfig.hidden_size_layerwise = [768, 768, 384, 384, 192, 96, 96, 192, 384, 384, 768, 768]
 # DRBert = DimRedBertForMaskedLM(drconfig)
 current_max_pos, embed_size = roberta.bert.embeddings.position_embeddings.weight.shape
 drconfig.max_position_embeddings = max_pos
@@ -94,9 +95,9 @@ for i in range(len(roberta.bert.encoder.layer)):
             return ret
         roberta.bert.encoder.layer[i].output.dense = compress_output_dense(roberta.bert.encoder.layer[i].output.dense)
 roberta.config = drconfig
-roberta.save_pretrained("/data/disk1/private/xcj/LegalLongPLM/LegalPretrain/PLMConfig/DimRedBERT")
-drbert = DimRedBertModel.from_pretrained("/data/disk1/private/xcj/LegalLongPLM/LegalPretrain/PLMConfig/DimRedBERT")
-tokenizer = AutoTokenizer.from_pretrained("hfl/chinese-roberta-wwm-ext")
+roberta.save_pretrained("/home/xcj/LegalLongPLM/LegalLongPLM/PLMConfig/DimRedBERT")
+drbert = DimRedBertModel.from_pretrained("/home/xcj/LegalLongPLM/LegalLongPLM/PLMConfig/DimRedBERT")
+tokenizer = AutoTokenizer.from_pretrained("hfl/chinese-roberta-wwm-ext", mirror="tuna")
 inp = tokenizer("我爱北京天安门", return_tensors="pt")
 output = drbert(**inp)
 from IPython import embed; embed()
