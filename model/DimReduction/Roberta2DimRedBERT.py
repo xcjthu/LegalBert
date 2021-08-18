@@ -14,7 +14,7 @@ drconfig = AutoConfig.from_pretrained("hfl/chinese-roberta-wwm-ext", mirror="tun
 # drconfig.hidden_size_layerwise = [768, 768, 768, 512, 512, 256, 256, 512, 512, 768, 768, 768]
 drconfig.num_attention_heads_layerwise = [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]
 # drconfig.hidden_size_layerwise = [768, 768, 768, 384, 384, 192, 192, 384, 384, 768, 768, 768]
-drconfig.hidden_size_layerwise = [768, 768, 384, 384, 192, 96, 96, 192, 384, 384, 768, 768]
+drconfig.hidden_size_layerwise = [768, 768, 384, 384, 384, 192, 192, 384, 384, 384, 768, 768]
 # DRBert = DimRedBertForMaskedLM(drconfig)
 current_max_pos, embed_size = roberta.bert.embeddings.position_embeddings.weight.shape
 drconfig.max_position_embeddings = max_pos
