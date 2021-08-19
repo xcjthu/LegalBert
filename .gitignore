@@ -13,3 +13,6 @@ config/default_local.config
 temp
 notebook
 result
+
+utils/preliminary/*.txt
+utils/preliminary/rawzh
