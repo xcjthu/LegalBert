@@ -16,3 +16,5 @@ result
 
 utils/preliminary/*.txt
 utils/preliminary/rawzh
+utils/preliminary/*.json
+utils/preliminary/*.pdf
