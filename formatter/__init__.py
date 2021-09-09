@@ -5,6 +5,7 @@ from .VanillaLFMFormatter import VanillaLFMFormatter
 from .DocLawFormatter import DocLawFormatter
 from .NSPDocLawFormatter import NSPDocLawFormatter
 from .ContrastiveLawFormatter import ContrastiveLawFormatter
+from .UnContrastiveFormatter import UnContrastiveFormatter
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ formatter_list = {
     "DocLaw": DocLawFormatter,
     "NSPLaw": NSPDocLawFormatter,
     "ContrastiveLaw": ContrastiveLawFormatter,
+    "UnContrastive": UnContrastiveFormatter
 }
 
 

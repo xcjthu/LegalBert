@@ -4,6 +4,7 @@ from .VanillaLFM import VanillaLFM, VanillaBert, VanillaDimRedBERT
 from .DocLawLFM import DocLawLFM
 from .ContrastiveLawLFM import ContrastiveLawLFM
 from .TokenSkipLFMPretrain import TokenSkipLFMPretrain
+from .UnContrastiveLFM import UnContrastiveLFM
 
 model_list = {
     "CNN": TextCNN,
@@ -13,7 +14,8 @@ model_list = {
     "DocLaw": DocLawLFM,
     "ContrastiveLaw": ContrastiveLawLFM,
     "DimRedBERT": VanillaDimRedBERT,
-    "TokenSkip": TokenSkipLFMPretrain
+    "TokenSkip": TokenSkipLFMPretrain,
+    "UnContrastive": UnContrastiveLFM
 }
 
 def get_model(model_name):
