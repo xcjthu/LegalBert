@@ -27,12 +27,13 @@ class UnContrastiveFormatter(BasicFormatter):
                 last_pos = tpos + 2
         sents.append(doc[last_pos:-1])
         random.shuffle(sents)
-        ret = []
+        ret = [int(doc[0])]
         for sent in sents:
-            ret += sent
-        print("==" * 20)
-        print(self.tokenizer.decode(doc))
-        print(self.tokenizer.decode(ret))
+            ret += sent.tolist()
+        ret.append(int(doc[-1]))
+        # print("==" * 20)
+        # print(self.tokenizer.decode(doc))
+        # print(self.tokenizer.decode(ret))
         return ret
 
     def process(self, data, config, mode, *args, **params):
@@ -49,7 +50,7 @@ class UnContrastiveFormatter(BasicFormatter):
                 mask[docid, :len(doc)] = 1
                 rmask[docid, :len(rdoc)] = 1
                 inputx.append(torch.LongTensor( np.array(( doc.tolist() + [self.tokenizer.pad_token_id] * ( self.max_len - len(doc) ) ).copy(), dtype=np.int16) ))
-                rinputx.append(torch.LongTensor( np.array(( rdoc.tolist() + [self.tokenizer.pad_token_id] * ( self.max_len - len(rdoc) ) ).copy(), dtype=np.int16) ))
+                rinputx.append(torch.LongTensor( np.array(( rdoc + [self.tokenizer.pad_token_id] * ( self.max_len - len(rdoc) ) ).copy(), dtype=np.int16) ))
             else:
                 mask[docid] = 1
                 rmask[docid] = 1
@@ -62,6 +63,7 @@ class UnContrastiveFormatter(BasicFormatter):
         rret["mask"] = torch.LongTensor(rmask)
         for key in rret:
             ret["r-" + key] = rret[key]
-        ret["gat"] = np.zeros((len(docs), self.max_len))
+        ret["gat"] = np.zeros((len(docs) * 2, self.max_len))
         ret["gat"][:,0] = 1
+        ret["gat"] = torch.LongTensor(ret["gat"])
         return ret

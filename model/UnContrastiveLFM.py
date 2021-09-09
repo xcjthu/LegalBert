@@ -23,6 +23,7 @@ class UnContrastiveLFM(nn.Module):
         # self.LFM = LongformerForMaskedLM(config)
         self.LFM = LongformerForMaskedLM.from_pretrained('thunlp/Lawformer', output_hidden_states=True)
         self.pooler = Pooler(self.LFM.config)
+        self.loss2 = nn.CrossEntropyLoss()
 
     def save_pretrained(self, path):
         self.LFM.save_pretrained(path)
@@ -32,11 +33,12 @@ class UnContrastiveLFM(nn.Module):
         input_ids = torch.cat([data["input_ids"], data["r-input_ids"]], dim=0)
         attention_mask = torch.cat([data["mask"], data["r-mask"]], dim=0)
         labels = torch.cat([data["labels"], data["r-labels"]], dim=0)
+        # print(data["gat"].device, attention_mask.device)
         ret = self.LFM(input_ids, attention_mask=attention_mask, global_attention_mask=data["gat"], labels=labels)
         loss, hiddens = ret["loss"], ret["hidden_states"][-1]
         clsh = self.pooler(hiddens)
         orep, rrep = clsh[:batch], clsh[batch:] # batch, hidden_size
         score = orep.mm(torch.transpose(rrep, 0, 1)) # batch, batch
         label = torch.arange(batch).to(score.device)
-        loss2 = torch.softmax(score, label)
+        loss2 = self.loss2(score, label)
         return {"loss": loss + loss2, "acc_result":{}}
