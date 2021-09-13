@@ -16,7 +16,7 @@ class UnContrastiveFormatter(BasicFormatter):
         self.tokenizer = AutoTokenizer.from_pretrained("hfl/chinese-roberta-wwm-ext")
         self.mlm_prob = config.getfloat("train", "mlm_prob")
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm_probability=self.mlm_prob)
-    
+ 
     def shuffle_doc(self, doc):
         # doc: doc_len
         sents = []
@@ -37,19 +37,23 @@ class UnContrastiveFormatter(BasicFormatter):
         return ret
 
     def process(self, data, config, mode, *args, **params):
-        docs = []
-        for d in data:
-            docs += d
+        # docs = []
+        # for d in data:
+        #     docs += d
         inputx = []
         rinputx = []
-        mask = np.zeros((len(docs), self.max_len))
-        rmask = np.zeros((len(docs), self.max_len))
-        for docid, doc in enumerate(docs):
-            rdoc = self.shuffle_doc(doc)
+        mask = np.zeros((len(data), self.max_len))
+        rmask = np.zeros((len(data), self.max_len))
+        for docid, docs in enumerate(data):
+            doc, rdoc = [], []
+            for tmp in docs:
+                rtmp = self.shuffle_doc(tmp)
+                doc += tmp.tolist()
+                rdoc += rtmp
             if len(doc) < self.max_len:
                 mask[docid, :len(doc)] = 1
                 rmask[docid, :len(rdoc)] = 1
-                inputx.append(torch.LongTensor( np.array(( doc.tolist() + [self.tokenizer.pad_token_id] * ( self.max_len - len(doc) ) ).copy(), dtype=np.int16) ))
+                inputx.append(torch.LongTensor( np.array(( doc + [self.tokenizer.pad_token_id] * ( self.max_len - len(doc) ) ).copy(), dtype=np.int16) ))
                 rinputx.append(torch.LongTensor( np.array(( rdoc + [self.tokenizer.pad_token_id] * ( self.max_len - len(rdoc) ) ).copy(), dtype=np.int16) ))
             else:
                 mask[docid] = 1

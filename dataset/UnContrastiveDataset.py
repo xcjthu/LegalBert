@@ -44,7 +44,7 @@ class UnContrastiveDataset(Dataset):
         sent = [self.get_index_i(idx)]
         tlen = sent[0].shape[0]
         while tlen < self.max_len - 50:
-            break
+            # break
             ridx = random.randint(0, self.length - 1)
             rsent = self.get_index_i(ridx)
             tlen += rsent.shape[0]
