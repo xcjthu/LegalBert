@@ -1,6 +1,7 @@
 from transformers import AutoModelForMaskedLM,AutoModelForPreTraining,LongformerConfig,LongformerForMaskedLM
 import torch
 from torch import nn
+import torch.distributed as dist
 
 class Pooler(nn.Module):
     def __init__(self, config):
@@ -40,7 +41,17 @@ class UnContrastiveLFM(nn.Module):
         clsh = self.pooler(hiddens)
         orep, rrep = clsh[:batch], clsh[batch:] # batch, hidden_size
         # score = orep.mm(torch.transpose(rrep, 0, 1)) # batch, batch
+        if dist.is_initialized() and self.training:
+            orep_list = [torch.zeros_like(orep) for _ in range(dist.get_world_size())]
+            dist.all_gather(tensor_list=orep_list, tensor=orep.contiguous())
+            orep_list[dist.get_rank()] = orep
+            orep = torch.cat(orep_list, dim=0) # batch * world_size, hidden_size
+
+            rrep_list = [torch.zeros_like(rrep) for _ in range(dist.get_world_size())]
+            dist.all_gather(tensor_list=rrep_list, tensor=rrep.contiguous())
+            rrep_list[dist.get_rank()] = rrep
+            rrep = torch.cat(rrep_list, dim=0) # world_size, hidden_size
         score = self.sim(orep.unsqueeze(1), rrep.unsqueeze(0))
-        label = torch.arange(batch).to(score.device)
+        label = torch.arange(score.shape[0]).to(score.device)
         loss2 = self.loss2(score, label)
         return {"loss": loss + loss2, "acc_result":{}}
