@@ -67,7 +67,7 @@ class UnContrastiveFormatter(BasicFormatter):
         rret["mask"] = torch.LongTensor(rmask)
         for key in rret:
             ret["r-" + key] = rret[key]
-        ret["gat"] = np.zeros((len(docs) * 2, self.max_len))
+        ret["gat"] = np.zeros((len(data) * 2, self.max_len))
         ret["gat"][:,0] = 1
         ret["gat"] = torch.LongTensor(ret["gat"])
         return ret
