@@ -36,6 +36,24 @@ class UnContrastiveFormatter(BasicFormatter):
         # print(self.tokenizer.decode(ret))
         return ret
 
+    def shuffle_part_doc(self, doc):
+        # doc: doc_len (list)
+        sents = []
+        for tpos, token in enumerate(doc[1:-1]):
+            if token == 511:
+                sents.append(doc[last_pos:tpos + 2])
+                last_pos = tpos + 2
+        sents.append(doc[last_pos:-1])
+        selected = random.sample(list(range(len(sents))), int(len(sents) * 0.2))
+        shuffle = {i: i for i in range(len(sents))}
+        for i in range(-1, len(selected) - 1):
+            shuffle[i] = shuffle[i + 1]
+        ret = [int(doc[0])]
+        for sent in sents:
+            ret += sent.tolist()
+        ret.append(int(doc[-1]))
+        return ret
+
     def process(self, data, config, mode, *args, **params):
         # docs = []
         # for d in data:
