@@ -48,7 +48,7 @@ class UnContrastiveDataset(Dataset):
             ridx = random.randint(0, self.length - 1)
             rsent = self.get_index_i(ridx)
             tlen += rsent.shape[0]
-            if tlen > self.max_len:
+            if tlen - self.max_len > 20:
                 rsent = rsent[:tlen - self.max_len]
             sent.append(rsent)
         return sent

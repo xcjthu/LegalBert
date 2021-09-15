@@ -6,12 +6,22 @@ import logging
 from tools.init_tool import init_all
 from config_parser import create_config
 from tools.train_tool import train
+import random
+import numpy as np
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -21,6 +31,7 @@ if __name__ == "__main__":
     parser.add_argument('--local_rank', type=int, help='local rank', default=-1)
     parser.add_argument('--do_test', help="do test while training or not", action="store_true")
     parser.add_argument('--comment', help="checkpoint file path", default=None)
+    parser.add_argument("--seed", default=2333)
     args = parser.parse_args()
 
     configFilePath = args.config
@@ -39,6 +50,7 @@ if __name__ == "__main__":
         device_list = args.gpu.split(",")
         for a in range(0, len(device_list)):
             gpu_list.append(int(a))
+    set_seed(args.seed)
 
     os.system("clear")
     config.set('distributed', 'local_rank', args.local_rank)
