@@ -66,8 +66,8 @@ def train(parameters, config, gpu_list, do_test=False, local_rank=-1):
     grad_accumulate = config.getint("train", "grad_accumulate")
 
     lr_scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=config.getint('train', 'warmup_steps'), num_training_steps=config.getint('train', 'training_steps'))
-    #if "lr_scheduler" in parameters:
-    #lr_scheduler.load_state_dict(parameters["lr_scheduler"])
+    if "lr_scheduler" in parameters:
+        lr_scheduler.load_state_dict(parameters["lr_scheduler"])
 
     # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
     # exp_lr_scheduler.step(trained_epoch)
