@@ -1,8 +1,8 @@
-from transformers import AutoModelForMaskedLM,AutoModelForPreTraining,LongformerConfig,LongformerForMaskedLM
+from transformers import AutoModelForMaskedLM
 import torch
 from torch import nn
 import torch.distributed as dist
-
+from model.LongformerSentID.LongformerSentID import LongformerSentIDForMaskedLM
 class Pooler(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -22,7 +22,8 @@ class UnContrastiveLFM(nn.Module):
         super(UnContrastiveLFM, self).__init__()
         # config = LongformerConfig.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
         # self.LFM = LongformerForMaskedLM(config)
-        self.LFM = LongformerForMaskedLM.from_pretrained('thunlp/Lawformer', output_hidden_states=True)
+        # self.LFM = AutoModelForMaskedLM.from_pretrained('thunlp/Lawformer', output_hidden_states=True)
+        self.LFM = LongformerSentIDForMaskedLM.from_pretrained('thunlp/Lawformer', output_hidden_states=True)
         self.pooler = Pooler(self.LFM.config)
         self.sim = nn.CosineSimilarity(dim=-1)
         self.loss2 = nn.CrossEntropyLoss()
