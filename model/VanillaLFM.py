@@ -2,13 +2,15 @@ from transformers import AutoModelForMaskedLM,AutoModelForPreTraining,Longformer
 import torch
 from torch import nn
 from .DimReduction.DimRedBERT import DimRedBertForMaskedLM
+from model.LongformerSentID.LongformerSentID import LongformerSentIDForMaskedLM
 
 class VanillaLFM(nn.Module):
     def __init__(self, config, gpu_list, *args, **params):
         super(VanillaLFM, self).__init__()
         # config = LongformerConfig.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
         # self.LFM = LongformerForMaskedLM(config)
-        self.LFM = LongformerForMaskedLM.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
+        # self.LFM = LongformerForMaskedLM.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
+        self.LFM = LongformerSentIDForMaskedLM.from_pretrained("thunlp/Lawformer")
 
     def save_pretrained(self, path):
         self.LFM.save_pretrained(path)
