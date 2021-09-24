@@ -17,9 +17,9 @@ class Pooler(nn.Module):
         pooled_output = self.activation(pooled_output)
         return pooled_output
 
-class UnContrastiveLFM(nn.Module):
+class UnContrastiveLFMVer2(nn.Module):
     def __init__(self, config, gpu_list, *args, **params):
-        super(UnContrastiveLFM, self).__init__()
+        super(UnContrastiveLFMVer2, self).__init__()
         # config = LongformerConfig.from_pretrained('/mnt/datadisk0/xcj/LegalBert/LegalBert/PLMConfig/roberta-converted-lfm')
         # self.LFM = LongformerForMaskedLM(config)
         self.LFM = LongformerForMaskedLM.from_pretrained('thunlp/Lawformer', output_hidden_states=True)
@@ -31,7 +31,7 @@ class UnContrastiveLFM(nn.Module):
         self.LFM.save_pretrained(path)
 
     def forward(self, data, config, gpu_list, acc_result, mode):
-        out = self.bert(data['input_ids'], attention_mask=data['mask'], global_attention_mask=data["gat"], labels=data['labels'])
+        out = self.LFM(data['input_ids'], attention_mask=data['mask'], global_attention_mask=data["gat"], labels=data['labels'])
         loss, hiddens = out["loss"], out["hidden_states"][-1]
         ret = self.pooler(hiddens)
 
@@ -47,7 +47,7 @@ class UnContrastiveLFM(nn.Module):
             dist.all_gather(tensor_list=pos_list, tensor=pos.contiguous())
             pos_list[dist.get_rank()] = pos
             pos = torch.cat(pos_list, dim=0) # world_size, hidden_size
-        sim = self.sim(pos.unsqueeze(1), neg.unsqueeze(1))
+        sim = self.sim(pos.unsqueeze(1), neg.unsqueeze(0))
         label = torch.arange(sim.shape[0]).to(sim.device)
         loss2 = self.loss2(sim, label)
         return {"loss": loss + loss2, "acc_result":{}}
