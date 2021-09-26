@@ -1214,6 +1214,9 @@ class LongformerLayer(nn.Module):
         self.output = LongformerOutput(config)
         self.chunk_size_feed_forward = config.chunk_size_feed_forward
         self.seq_len_dim = 1
+        self.layer_id = layer_id
+        # if layer_id == 5:
+        #     self.chunk_emb = nn.Embedding(10, config.hidden_size)
 
     def forward(
         self,
@@ -1240,6 +1243,14 @@ class LongformerLayer(nn.Module):
         layer_output = apply_chunking_to_forward(
             self.ff_chunk, self.chunk_size_feed_forward, self.seq_len_dim, attn_output
         )
+        # if self.layer_id == 5:
+        #     from sklearn.cluster import KMeans
+        #     chunk_ids = []
+        #     for bid in range(layer_output.shape[0]):
+        #         kmeans = KMeans(n_clusters=10, random_state=0).fit(layer_output[bid].tolist())
+        #         chunk_ids.append(torch.LongTensor(kmeans.labels_).to(layer_output.device).unsqueeze(0))
+        #     chunk_emb = self.chunk_emb(torch.cat(chunk_ids, dim = 0))
+        #     layer_output = layer_output + chunk_emb
         outputs = (layer_output,) + outputs
         return outputs
 

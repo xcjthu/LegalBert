@@ -16,7 +16,7 @@ class UnContrastiveFormatterVer2(BasicFormatter):
         self.tokenizer = AutoTokenizer.from_pretrained("hfl/chinese-roberta-wwm-ext")
         self.mlm_prob = config.getfloat("train", "mlm_prob")
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm_probability=self.mlm_prob)
-        self.shuffle_ratio = 0.3
+        self.shuffle_ratio = 0.2
 
     def shuffle_doc(self, doc):
         # doc: doc_len
