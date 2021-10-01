@@ -2,22 +2,12 @@ import logging
 
 from .Basic import BasicFormatter
 from .VanillaLFMFormatter import VanillaLFMFormatter
-from .DocLawFormatter import DocLawFormatter
-from .NSPDocLawFormatter import NSPDocLawFormatter
-from .ContrastiveLawFormatter import ContrastiveLawFormatter
-from .UnContrastiveFormatter import UnContrastiveFormatter
-from .UnContrastiveFormatterVer2 import UnContrastiveFormatterVer2
 
 logger = logging.getLogger(__name__)
 
 formatter_list = {
     "Basic": BasicFormatter,
     'VanillaLFM': VanillaLFMFormatter,
-    "DocLaw": DocLawFormatter,
-    "NSPLaw": NSPDocLawFormatter,
-    "ContrastiveLaw": ContrastiveLawFormatter,
-    "UnContrastive": UnContrastiveFormatter,
-    "UnContrastiveVer2": UnContrastiveFormatterVer2
 }
 
 
