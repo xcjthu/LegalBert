@@ -26,5 +26,5 @@ class RecurrentTransMLM(nn.Module):
             tloss = tloss + loss
         out_pred = self.encoder(data["predb_inp"], attention_mask=data["predb_mask"], mem=mem, labels=data["predb_mlm"], return_dict=False)
         loss2, mem = out_pred[0], out_pred[2]
-        tloss = tloss + loss2
+        tloss = tloss / block_num + loss2
         return {"loss": tloss, "acc_result": {}}

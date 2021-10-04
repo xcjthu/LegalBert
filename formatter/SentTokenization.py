@@ -109,7 +109,9 @@ class SentTokenization(object):
         for b in blocks:
             assert len(b) == block_len
         if len(blocks) < max_block_size:
-            gg
+            mask += [[0] * block_len] * (max_block_size - len(blocks))
+            blocks += [[pad_id] * block_len] * (max_block_size - len(blocks))
+            
         assert len(blocks) == max_block_size
         if len(selected) > block_len:
             selected = selected[:block_len]
