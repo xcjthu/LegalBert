@@ -2,14 +2,15 @@ import logging
 
 from .Basic import BasicFormatter
 from .VanillaLFMFormatter import VanillaLFMFormatter
+from .RecurrentTransFormatter import RecurrentTransFormatter
 
 logger = logging.getLogger(__name__)
 
 formatter_list = {
     "Basic": BasicFormatter,
     'VanillaLFM': VanillaLFMFormatter,
+    "RecurrentMLM": RecurrentTransFormatter,
 }
-
 
 def init_formatter(config, mode, *args, **params):
     temp_mode = mode

@@ -65,7 +65,7 @@ def make_dataset(config, mode, encoding="utf8", *args, **params):
 # def make_dataset(path, impl, skip_warmup=False):
     path = config.get('data', '%s_data' % mode)
     impl = "mmap"
-    skip_warmup = False
+    skip_warmup = True
     if not IndexedDataset.exists(path):
         print(f"Dataset does not exist: {path}")
         print("Path should be a basename that both .idx and .bin can be appended to get full filenames.")

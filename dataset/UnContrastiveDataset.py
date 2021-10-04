@@ -12,7 +12,7 @@ class UnContrastiveDataset(Dataset):
         self.max_len = config.getint('train', 'max_len')
         path = config.get('data', '%s_data' % mode)
         flist = config.get('data', '%s_files' % mode).split(',')
-        self.datasets = [MMapIndexedDataset(os.path.join(path, f), False) for f in flist]
+        self.datasets = [MMapIndexedDataset(os.path.join(path, f), True) for f in flist]
         if mode == "train":
             self.lens = [len(d) - 5000 for d in self.datasets]
         else:
@@ -48,9 +48,11 @@ class UnContrastiveDataset(Dataset):
             ridx = random.randint(0, self.length - 1)
             rsent = self.get_index_i(ridx)
             tlen += rsent.shape[0]
-            if tlen - self.max_len > 20:
-                rsent = rsent[:tlen - self.max_len]
+            # if tlen - self.max_len > 20:
+            #     rsent = rsent[:tlen - self.max_len]
             sent.append(rsent)
+        if sum([s.shape[0] for s in sent]) < 3000:
+            print(tlen, sum([len(s) for s in sent]), "gg")
         return sent
 
     def __len__(self):

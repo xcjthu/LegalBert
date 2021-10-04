@@ -1,7 +1,7 @@
 from transformers import AutoModelForMaskedLM,AutoModelForPreTraining,LongformerConfig,LongformerForMaskedLM
 import torch
 from torch import nn
-from .DimReduction.DimRedBERT import DimRedBertForMaskedLM
+
 from model.LongformerSentID.LongformerSentID import LongformerSentIDForMaskedLM
 
 class VanillaLFM(nn.Module):
@@ -28,19 +28,6 @@ class VanillaBert(nn.Module):
     def save_pretrained(self, path):
         self.bert.save_pretrained(path)
     
-    def forward(self, data, config, gpu_list, acc_result, mode):
-        ret = self.bert(data['input_ids'], attention_mask=data['mask'], labels=data['labels'])
-        loss, logits = ret[0], ret[1]
-        return {"loss": loss, "acc_result": {}}
-
-class VanillaDimRedBERT(nn.Module):
-    def __init__(self, config, gpu_list, *args, **params):
-        super(VanillaDimRedBERT, self).__init__()
-        self.bert = DimRedBertForMaskedLM.from_pretrained("/home/xcj/LegalLongPLM/LegalLongPLM/PLMConfig/DimRedBERT")
-
-    def save_pretrained(self, path):
-        self.bert.save_pretrained(path)
-
     def forward(self, data, config, gpu_list, acc_result, mode):
         ret = self.bert(data['input_ids'], attention_mask=data['mask'], labels=data['labels'])
         loss, logits = ret[0], ret[1]
